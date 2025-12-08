@@ -212,9 +212,36 @@ static PHLMONITOR getCurrentMonitor()
     return g_pCompositor->getMonitorFromCursor();
 }
 
+static PHLMONITOR getNextMonitor()
+{
+    auto curr_monitor = getCurrentMonitor();
+
+    for (int i = 0; i < g_pCompositor->m_monitors.size(); i++) {
+        auto monitor = g_pCompositor->m_monitors[i];
+        if (monitor.get() == curr_monitor.get()) {
+            if (i < g_pCompositor->m_monitors.size() - 1) {
+                return g_pCompositor->m_monitors[i + 1];
+            }
+            return g_pCompositor->m_monitors[0];
+        }
+    }
+    return curr_monitor;
+}
+
 static SDispatchResult splitWorkspace(const std::string& workspace)
 {
-    auto const result = HyprlandAPI::invokeHyprctlCommand("dispatch", "workspace " + getWorkspaceFromMonitor(getCurrentMonitor(), workspace));
+    Debug::log(LOG, "[split-monitor-workspaces] Switch to workspace {}", workspace);
+
+    std::string absolute_workspace = getWorkspaceFromMonitor(getCurrentMonitor(), workspace);
+
+    if (absolute_workspace == std::to_string(getCurrentMonitor()->activeWorkspaceID())) {
+        Debug::log(LOG, "[split-monitor-workspaces] Next monitor ");
+        absolute_workspace = std::to_string(getNextMonitor()->activeWorkspaceID());
+    }
+
+    Debug::log(LOG, "[split-monitor-workspaces] Absolute workspace: {} ", absolute_workspace);
+
+    auto const result = HyprlandAPI::invokeHyprctlCommand("dispatch", "workspace " + absolute_workspace);
     return {.success = result == "ok", .error = result};
 }
 
