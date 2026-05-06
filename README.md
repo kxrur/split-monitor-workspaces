@@ -85,7 +85,7 @@ With flakes enabled, a sample installation will look like this:
                 wayland.windowManager.hyprland = {
                   # ...
                   plugins = [
-                    split-monitor-workspaces.packages.${pkgs.system}.split-monitor-workspaces
+                    split-monitor-workspaces.packages.${pkgs.stdenv.hostPlatform.system}.split-monitor-workspaces
                   ];
                   # ...
                 };
