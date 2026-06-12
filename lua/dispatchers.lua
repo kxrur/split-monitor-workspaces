@@ -51,6 +51,29 @@ function dispatchers.do_workspace(workspace_str)
 	else
 		---@type string
 		local resolved = helpers.get_workspace_from_monitor(current_monitor, workspace_str)
+
+		-- If we're already on this workspace, switch to the next monitor
+		if current_monitor.active_workspace
+				and current_monitor.active_workspace.name == resolved then
+			local monitors = hl.get_monitors()
+
+			for i, monitor in ipairs(monitors) do
+				if monitor.id == current_monitor.id then
+					local next_monitor = monitors[(i % #monitors) + 1]
+
+					if next_monitor.active_workspace then
+						hl.dispatch(
+							hl.dsp.focus({
+								workspace = next_monitor.active_workspace.name
+							})
+						)
+					end
+
+					return
+				end
+			end
+		end
+
 		hl.dispatch(hl.dsp.focus({ workspace = resolved }))
 	end
 end
